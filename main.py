@@ -1,7 +1,12 @@
 import telebot
 import parse
+import kfc
+import datetime
 from telebot import types
+import urllib.request as url
+import busparse
 from time import sleep
+
 import baseutil
 
 f = open('../bot_token.txt')
@@ -18,7 +23,30 @@ button_change = types.KeyboardButton(text='Сменить группу')
 button_date = types.KeyboardButton(text='Расписание по дате')
 keyboard.add(button_today, button_tomorrow, button_week, button_change, button_date)
 
+curr_date = datetime.datetime.now()
+mol = 'http://moscow.map.office.transnavi.ru/wap/online/index.php?st_id=16402'
+n1 = 'http://moscow.map.office.transnavi.ru/wap/online/index.php?st_id=8406'
+e400 = 'http://moscow.map.office.transnavi.ru/wap/online/index.php?st_id=13771'
+
+i = 0
+for e in kfc.menu():
+    f = open(str(i) + '.jpg', 'wb')
+    f.write(url.urlopen(e).read())
+    f.close()
+    i += 1
+
 while (True):
+
+    if curr_date != datetime.datetime.now():
+        i = 0
+        for e in kfc.menu():
+            f = open(str(i) + '.jpg', 'wb')
+            f.write(url.urlopen(e).read())
+            f.close()
+            i += 1
+        curr_date = datetime.datetime.now()
+
+
     @bot.message_handler(commands=['help', 'start'])
     def send_welcome(message):
         baseutil.add_user(message.chat.id, 'МП-10')
@@ -42,6 +70,18 @@ while (True):
         elif message.text == 'Расписание по дате':
             bot.send_message(message.chat.id, 'Пока что не работает :з')
             pass
+        elif message.text == 'Купоны' or message.text == 'купоны' or message.text == 'купон' or message.text == 'Купон':
+            menu = kfc.menu()
+            j = 0
+            for e in menu:
+                bot.send_photo(message.chat.id, open(str(j) + '.jpg', 'rb'))
+                j += 1
+        elif message.text == '400':
+            bot.send_message(message.chat.id, busparse.menu(e400))
+        elif message.text == 'Н1':
+            bot.send_message(message.chat.id, busparse.menu(n1))
+        elif message.text == '127':
+            bot.send_message(message.chat.id, busparse.menu(mol))
         else:
             bot.send_message(message.chat.id, 'Вы выбрали группу ' + message.text + '.\nВыберите расписание:',
                              reply_markup=keyboard)
