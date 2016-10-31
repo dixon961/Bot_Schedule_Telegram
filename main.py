@@ -1,3 +1,4 @@
+#Telegram @dixons_bot
 import telebot
 import parse
 import kfc
